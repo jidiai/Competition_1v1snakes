@@ -1,18 +1,25 @@
 # Competition_1v1snakes
 
-### Baseline agents: 
+### Dependency
+You need to create competition environment.
+>conda create -n snake1v1 python=3.6
+
+>pip install -r requirements.txt
+
+### Baseline agents
 1. random-agent 
 2. greedy-agent
-3. dqn-agent
+3. rl-agent
 
-### Start to train rl-agent
+### How to train rl-agent
 
-python rl_trainer/main.py
+>python rl_trainer/main.py
 
-note: You can edit different parameters, for example
+You can edit different parameters, for example
 
-python rl_trainer/main.py --lr_a 0.001 --seed_nn 2
+### Evaluation 
+You can locally evaluate your different agents
 
-### Start to evaluate 
+### Ready to submit 
 
-python evaluation.py --my_ai "random" --opponent "dqn"
+You can directly submit a random policy, which is **example/submission.py**

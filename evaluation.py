@@ -123,7 +123,7 @@ if __name__ == "__main__":
     game = make(env_type, conf=None)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--my_ai", default="dqn", help="dqn/random/greedy")
+    parser.add_argument("--my_ai", default="random", help="dqn/random/greedy")
     parser.add_argument("--opponent", default="greedy", help="dqn/random/greedy")
     parser.add_argument("--episode", default=100)
     args = parser.parse_args()
