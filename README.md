@@ -3,16 +3,16 @@
 ### Baseline agents: 
 1. random-agent 
 2. greedy-agent
-3. ddpg-agent
+3. dqn-agent
 
-### Start to train ddpg-agent
+### Start to train rl-agent
 
-python agent/ddpg/main.py
+python agent/dqn/main.py
 
-note: You can edit different arguments, for example
+note: You can edit different parameters, for example
 
-python agent/ddpg/main.py --lr_a 0.001 --seed_nn 2
+python agent/dqn/main.py --lr_a 0.001 --seed_nn 2
 
 ### Start to evaluate 
 
-python evaluation.py --my_ai "random" --opponent "ddpg"
+python evaluation.py --my_ai "random" --opponent "dqn"

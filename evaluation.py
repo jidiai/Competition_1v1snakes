@@ -1,9 +1,8 @@
 import numpy as np
 
-from examples.ddpg.submission import get_observations
-from examples.ddpg.submission import agent as bicnet_actor
-from examples.ddpg.submission import agent as ddpg_actor
-from examples.greedy_pop.submission import greedy_snake
+from agent.dqn.rl_agent import get_observations
+from agent.greedy.greedy_agent import greedy_snake
+from agent.dqn.rl_agent import agent as dqn_snake
 from env.chooseenv import make
 from tabulate import tabulate
 import argparse
@@ -18,11 +17,12 @@ def print_state(state, actions, step):
 
 
 def get_actions(obs, algo, greedy_info, side):
+
     actions = np.random.randint(4, size=1)
 
-    # ddpg
-    if algo == 'ddpg':
-        actions[:] = bicnet_actor.choose_action([obs])[:]
+    # dqn
+    if algo == 'dqn':
+        actions[:] = dqn_snake.choose_action([obs])
 
     # greedy
     if algo == 'greedy':
@@ -36,9 +36,6 @@ def get_actions(obs, algo, greedy_info, side):
                                   greedy_info['snakes'],
                                   greedy_info['width'],
                                   greedy_info['height'], ctrl_agent_index)[:]
-
-    if algo == "ddpg":
-        actions[:] = ddpg_actor.choose_action([obs])[:]
 
     return actions
 
@@ -126,11 +123,11 @@ if __name__ == "__main__":
     game = make(env_type, conf=None)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--my_ai", default="greedy", help="ddpg/random/greedy")
-    parser.add_argument("--opponent", default="ddpg", help="ddpg/random/greedy")
+    parser.add_argument("--my_ai", default="dqn", help="dqn/random/greedy")
+    parser.add_argument("--opponent", default="greedy", help="dqn/random/greedy")
     parser.add_argument("--episode", default=100)
     args = parser.parse_args()
 
-    # [greedy, ddpg, random]
+    # [greedy, dqn, random]
     agent_list = [args.my_ai, args.opponent]
     run_game(game, algo_list=agent_list, episode=args.episode, verbose=False)

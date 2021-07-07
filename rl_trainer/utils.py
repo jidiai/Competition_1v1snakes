@@ -5,11 +5,11 @@ import torch.nn as nn
 from typing import Union
 from torch.distributions import Categorical
 
-import sys
 from pathlib import Path
-base_dir = Path(__file__).resolve().parent.parent.parent
+import sys
+base_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(base_dir))
-from examples.greedy_pop.submission import greedy_snake
+from agent.greedy.greedy_agent import greedy_snake
 from types import SimpleNamespace as SN
 import yaml
 import os
@@ -116,6 +116,13 @@ def logits_random(act_dim, logits):
     actions[:num_agents] = acs[:]
     return actions
 
+def append_random(act_dim, action):
+    action = torch.Tensor([action]).to(device)
+    acs = [out for out in action]
+    num_agents = len(action)
+    actions = np.random.randint(act_dim, size=num_agents << 1)
+    actions[:num_agents] = acs[:]
+    return actions
 
 def logits_greedy(state, info, logits, height, width):
     state = np.squeeze(np.array(state), axis=2)

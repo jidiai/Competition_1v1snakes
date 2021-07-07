@@ -3,12 +3,10 @@
 # Author: Yutong Wu
 
 from pathlib import Path
-import sys
 
-def make_logpath(game_name):
-    base_dir = Path(__file__).resolve().parent.parent
-    model_dir = base_dir / Path('ddpg/models') / game_name
-
+def make_logpath(game_name, algo):
+    base_dir = Path(__file__).resolve().parent
+    model_dir = base_dir / Path('models') / game_name
     if not model_dir.exists():
         curr_run = 'run1'
     else:
@@ -20,6 +18,5 @@ def make_logpath(game_name):
         else:
             curr_run = 'run%i' % (max(exst_run_nums) + 1)
     run_dir = model_dir / curr_run
-    log_dir = run_dir  # / 'logs'
-    # os.makedirs(log_dir)
+    log_dir = run_dir
     return run_dir, log_dir
