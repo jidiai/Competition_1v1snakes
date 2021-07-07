@@ -7,11 +7,11 @@
 
 ### Start to train rl-agent
 
-python agent/dqn/main.py
+python rl_trainer/main.py
 
 note: You can edit different parameters, for example
 
-python agent/dqn/main.py --lr_a 0.001 --seed_nn 2
+python rl_trainer/main.py --lr_a 0.001 --seed_nn 2
 
 ### Start to evaluate 
 
