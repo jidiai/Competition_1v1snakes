@@ -17,8 +17,12 @@ You need to create competition environment.
 
 You can edit different parameters, for example
 
+>python rl_trainer/main.py --lr_a 0.001 --seed_nn 2
+
 ### Evaluation 
 You can locally evaluate your different agents
+
+>python evaluation.py --my_ai "random" --opponent "dqn"
 
 ### Ready to submit 
 
