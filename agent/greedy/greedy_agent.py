@@ -63,22 +63,3 @@ def to_joint_action(actions, num_agent):
         one_hot_action = [one_hot_action]
         joint_action.append(one_hot_action)
     return joint_action
-
-
-def my_controller(observation_list, action_space_list, is_act_continuous):
-    obs = observation_list[0]
-    board_width = obs['board_width']
-    board_height = obs['board_height']
-    ctrl_agent_index = [obs['controlled_snake_index'] + 2 for obs in observation_list]
-    state_map = np.squeeze(np.array(obs['state_map']), axis=2)
-    beans_position = obs[1]
-    snakes_position = {key: obs[key] for key in obs.keys() & {2, 3}}
-
-    p = np.random.random()
-    epsilon = 1
-    if p <= epsilon:
-        actions = greedy_snake(state_map, beans_position, snakes_position, board_width, board_height, ctrl_agent_index)
-    else:
-        actions = np.random.randint(4, size=len(ctrl_agent_index))
-    joint_action = to_joint_action(actions, len(ctrl_agent_index))
-    return joint_action

@@ -1,3 +1,22 @@
+# -*- coding:utf-8  -*-
+# Time  : 2021/5/31 下午4:14
+# Author: Yahui Cui
+
+"""
+# =================================== Important =========================================
+Notes:
+1. this agent is random agent , which can fit any env in Jidi platform.
+2. if you want to load .pth file, please follow the instruction here:
+https://github.com/jidiai/ai_lib/blob/master/examples/demo
+"""
+
+def my_controller(observation_list, action_space_list, is_act_continuous=False):
+    joint_action = []
+    for i in range(len(action_space_list)):
+        player = sample(action_space_list[i], is_act_continuous)
+        joint_action.append(player)
+    return joint_action
+
 
 def sample(action_space_list_each, is_act_continuous):
     player = []
