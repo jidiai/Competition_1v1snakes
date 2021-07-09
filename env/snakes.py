@@ -1,14 +1,12 @@
-from abc import ABC
-
 from env.simulators.gridgame import GridGame
 import random
 from env.obs_interfaces.observation import *
 from util.discrete import Discrete
 
 
-class SnakeEatBeans(GridGame, GridObservation, DictObservation, ABC):
+class SnakeEatBeans(GridGame, GridObservation, DictObservation):
     def __init__(self, conf):
-        # 给状态0和1加上预设的颜色值可能会更好一点
+        self.terminate_flg = False
         colors = conf.get('colors', [(255, 255, 255), (255, 140, 0)])
         super(SnakeEatBeans, self).__init__(conf, colors)
         # 0: 没有 1：食物 2-n_player+1:各玩家蛇身
@@ -67,6 +65,7 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation, ABC):
         self.cur_bean_num = 0
         self.beans_position = []
         self.current_state = self.init_state()
+        self.terminate_flg = False
 
         return self.current_state, self.init_info
 
@@ -278,7 +277,9 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation, ABC):
                                 return True
             return False
 
-        can_regenerate()
+        flg = can_regenerate()
+        if not flg:
+            self.terminate_flg = True
         return snake
 
     def is_not_valid_action(self, joint_action):
@@ -305,7 +306,9 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation, ABC):
         for s in self.players:
             all_member += len(s.segments)
 
-        return self.step_cnt > self.max_step or all_member > self.board_height * self.board_width
+        is_done = self.step_cnt > self.max_step or all_member > self.board_height * self.board_width
+
+        return is_done or self.terminate_flg
 
     def encode(self, actions):
         joint_action = self.init_action_space()
