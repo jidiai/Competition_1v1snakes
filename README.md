@@ -4,6 +4,8 @@
 You need to create competition environment.
 >conda create -n snake1v1 python=3.6
 
+>conda activate snake1v1
+
 >pip install -r requirements.txt
 
 ### Baseline agents
