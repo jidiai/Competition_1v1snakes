@@ -294,11 +294,9 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation):
 
     def get_reward(self, joint_action):
         r = [0] * self.n_player
-        self.won = [0] * self.n_player
         for i in range(self.n_player):
             r[i] = self.players[i].snake_reward
             self.n_return[i] += r[i]
-        # print("score:", self.won)
         return r
 
     def is_terminal(self):
