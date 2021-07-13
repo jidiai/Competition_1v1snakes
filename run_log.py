@@ -99,9 +99,6 @@ def run_game(g, env_name, player_ids, actions_spaces, policy_list):
         step = "step%d" % g.step_cnt
         if g.step_cnt % 10 == 0:
             print(step)
-        if g.is_obs_continuous:
-            if hasattr(g, "env_core") and render_mode:
-                g.env_core.render()
         else:
             info_dict = {}
             info_dict["time"] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
@@ -132,26 +129,12 @@ def get_valid_agents():
 
 
 if __name__ == "__main__":
-    # "gobang_1v1", "reversi_1v1", "snakes_1v1", "sokoban_2p", "snakes_3v3", "snakes_5p", "sokoban_1p"
-    # "classic_CartPole-v0", "classic_CartPole-v1", "classic_MountainCar-v0", "classic_MountainCarContinuous-v0",
-    # "classic_Pendulum-v0", "classic_Acrobot-v1", "football_11v11_kaggle", "MiniWorld-Hallway-v0",
-    # "MiniWorld-OneRoom-v0", "MiniWorld-OneRoomS6-v0", "MiniWorld-OneRoomS6Fast-v0",
-    # "MiniWorld-TMaze-v0", "MiniWorld-TMazeLeft-v0", "MiniWorld-TMazeRight-v0", "MiniGrid-DoorKey-16x16-v0",
-    # "MiniGrid-MultiRoom-N6-v0", "MiniGrid-Dynamic-Obstacles-16x16-v0", "ParticleEnv-simple",
-    # "ParticleEnv-simple_adversary", "ParticleEnv-simple_crypto", "ParticleEnv-simple_push",
-    # "ParticleEnv-simple_reference", "ParticleEnv-simple_speaker_listener", "ParticleEnv-simple_spread",
-    # "ParticleEnv-simple_tag", "ParticleEnv-simple_world_comm", "football_11_vs_11_stochastic",
-    # "overcookedai-cramped_room", "overcookedai-asymmetric_advantages", "overcookedai-coordination_ring",
-    # "overcookedai-forced_coordination", "overcookedai-counter_circuit"
     env_type = "snakes_1v1"
     game = make(env_type)
 
-    # 针对"classic_"环境，使用gym core 进行render;
-    # 非"classic_"环境，使用replay工具包的replay.html，通过上传.json进行网页回放
     render_mode = True
 
-    # print("可选policy 名称类型:", get_valid_agents())
-    policy_list = ["greedy", "random"]
+    policy_list = ["greedy", "greedy"]
 
     player_id, actions_space = get_players_and_action_space_list(game)
     run_game(game, env_type, player_id, actions_space, policy_list)
