@@ -5,7 +5,7 @@ import json
 from env.chooseenv import make
 from util.get_logger import get_logger
 from env.obs_interfaces.observation import obs_type
-
+import argparse
 
 def get_players_and_action_space_list(g):
     if sum(g.agent_nums) != g.n_player:
@@ -134,7 +134,12 @@ if __name__ == "__main__":
 
     render_mode = True
 
-    policy_list = ["greedy", "greedy"]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--my_ai", default="random", help="dqn/random/greedy")
+    parser.add_argument("--opponent", default="greedy", help="dqn/random/greedy")
+    args = parser.parse_args()
+
+    policy_list = [args.my_ai, args.opponent]
 
     player_id, actions_space = get_players_and_action_space_list(game)
     run_game(game, env_type, player_id, actions_space, policy_list)

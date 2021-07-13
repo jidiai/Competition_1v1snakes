@@ -26,6 +26,14 @@ You can locally evaluate your different agents
 
 >python evaluation.py --my_ai "random" --opponent "dqn"
 
+### How to test submission 
+You can locally test your submission. At Jidi platform, we evaluate your submission as same as **run_log.py**
+
+Once you run this file, you can locally check battle logs in the folder named "logs".
+
+For example, 
+>python run_log.py --my_ai "random" --opponent "dqn"
+
 ### Ready to submit 
 
 1. Random policy --> **agent/random/submission.py**
