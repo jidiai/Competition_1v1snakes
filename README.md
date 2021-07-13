@@ -28,4 +28,7 @@ You can locally evaluate your different agents
 
 ### Ready to submit 
 
-You can directly submit a random policy, which is **example/submission.py**
+1. Random policy --> **agent/random/submission.py**
+2. Greedy policy --> **agent/greedy/submission.py**
+3. RL policy --> **agent/dqn/submission.py** and **critic_5000.pth**
+
