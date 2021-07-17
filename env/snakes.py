@@ -2,6 +2,8 @@ from env.simulators.gridgame import GridGame
 import random
 from env.obs_interfaces.observation import *
 from util.discrete import Discrete
+import itertools
+import numpy as np
 
 
 class SnakeEatBeans(GridGame, GridObservation, DictObservation):
@@ -139,29 +141,26 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation):
         return is_hit
 
     def generate_beans(self):
-        while self.cur_bean_num < self.n_beans and not self.is_terminal():
-            x = random.randrange(0, self.board_height)
-            y = random.randrange(0, self.board_width)
-            new_bean_pos = [x, y]
+        all_valid_positions = set(itertools.product(range(0, self.board_height), range(0, self.board_width)))
+        all_valid_positions = all_valid_positions - set(map(tuple, self.beans_position))
+        for positions in self.snakes_position.values():
+            all_valid_positions = all_valid_positions - set(map(tuple, positions))
 
-            # 检查豆子位置是否重复
-            is_bean_repeated = False
-            for bean in self.beans_position:
-                if bean == new_bean_pos:
-                    is_bean_repeated = True
-                    break
-            if not is_bean_repeated:
-                for positions in self.snakes_position.values():
-                    for pos in positions:
-                        if pos == new_bean_pos:
-                            is_bean_repeated = True
-                            break
-                    if is_bean_repeated:
-                        break
+        left_bean_num = self.n_beans - self.cur_bean_num
+        all_valid_positions = np.array(list(all_valid_positions))
+        left_valid_positions = len(all_valid_positions)
 
-            if not is_bean_repeated:
-                self.beans_position.append(new_bean_pos)
-                self.cur_bean_num += 1
+        new_bean_num = left_bean_num if left_valid_positions > left_bean_num else left_valid_positions
+
+        if left_valid_positions > 0:
+            new_bean_positions_idx = np.random.choice(left_valid_positions, size=new_bean_num, replace=False)
+            new_bean_positions = all_valid_positions[new_bean_positions_idx]
+        else:
+            new_bean_positions = []
+
+        for new_bean_pos in new_bean_positions:
+            self.beans_position.append(list(new_bean_pos))
+            self.cur_bean_num += 1
 
     def get_next_state(self, joint_action):
         not_valid = self.is_not_valid_action(joint_action)
