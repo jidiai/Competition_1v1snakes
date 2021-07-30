@@ -1,6 +1,5 @@
 import copy
 import math
-import numpy as np
 
 
 def get_min_bean(x, y, beans_position):
