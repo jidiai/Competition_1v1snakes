@@ -174,7 +174,7 @@ if __name__ == "__main__":
     render_mode = True
 
     # print("可选policy 名称类型:", get_valid_agents())
-    policy_list = ["random", "greedy"]
+    policy_list = ["random", "dqn"]
 
     multi_part_agent_ids, actions_space = get_players_and_action_space_list(game)
     run_game(game, env_type, multi_part_agent_ids, actions_space, policy_list, render_mode)

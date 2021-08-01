@@ -1,7 +1,7 @@
 import numpy as np
 
 from agent.dqn.rl_agent import get_observations
-from agent.greedy.greedy_agent import greedy_snake
+from agent.greedy.greedy_agent import greedy_snake, make_grid_map
 from agent.dqn.rl_agent import agent as dqn_snake
 from env.chooseenv import make
 from tabulate import tabulate
@@ -16,33 +16,53 @@ def print_state(state, actions, step):
     print(f'actions: {actions}\n')
 
 
-def get_actions(obs, algo, greedy_info, side):
+def get_actions(state, algo):
 
     actions = np.random.randint(4, size=1)
 
     # dqn
     if algo == 'dqn':
-        actions[:] = dqn_snake.choose_action([obs])
+        agent_trained_index = [0] # todo
+        obs = get_observations(state, agent_trained_index, obs_dim=18)
+        actions[:] = dqn_snake.choose_action(obs)
 
     # greedy
     if algo == 'greedy':
-        if side == 0:
-            ctrl_agent_index = [0]
-        else:
-            ctrl_agent_index = [1]
+        greedy_info = get_greedy_info(state)
 
         actions[:] = greedy_snake(greedy_info['state'],
                                   greedy_info['beans'],
                                   greedy_info['snakes'],
                                   greedy_info['width'],
-                                  greedy_info['height'], ctrl_agent_index)[:]
+                                  greedy_info['height'],
+                                  greedy_info['ctrl_agent_index'])[:]
 
     return actions
 
+def get_greedy_info(observation):
+    obs = observation.copy()
+    ctrl_agent_index = [obs['controlled_snake_index']]
+    board_width = obs['board_width']
+    board_height = obs['board_height']
+    beans_positions = obs[1]
+    snakes_positions = {key: obs[key] for key in obs.keys() & {2, 3}}
+    snake_map = make_grid_map(board_width, board_height, beans_positions, snakes_positions)
+    state_map = np.squeeze(np.array(snake_map), axis=2)
 
-def join_actions(obs, algo_list, greedy_info):
-    first_action = get_actions(obs[0], algo_list[0], greedy_info, side=0)
-    second_action = get_actions(obs[1], algo_list[1], greedy_info, side=1)
+    greedy_info = {'state': state_map,
+                   'beans': beans_positions,
+                   'snakes': snakes_positions,
+                   'width': board_width,
+                   'height': board_height,
+                   'ctrl_agent_index': ctrl_agent_index}
+    return greedy_info
+
+
+    # greedy_snake(state_map, beans_positions, snakes_positions, board_width, board_height, ctrl_agent_index)
+
+def get_join_actions(obs, algo_list):
+    first_action = get_actions(obs[0], algo_list[0])
+    second_action = get_actions(obs[1], algo_list[1])
     actions = np.zeros(2)
     actions[0] = first_action[:]
     actions[1] = second_action[:]
@@ -59,14 +79,11 @@ def run_game(env, algo_list, episode, verbose=False):
 
     for i in range(1, episode + 1):
         episode_reward = np.zeros(2)
-        state, info = env.reset()
+        state = env.reset()
 
-        obs = get_observations(state, info, agent_index, obs_dim, height, width)
+        # obs = get_observations(state, agent_index, obs_dim, height, width)
 
-        greedy_info = {'state': np.squeeze(np.array(state), axis=2), 'beans': info['beans_position'],
-                       'snakes': info['snakes_position'], 'width': width, 'height': height}
-
-        action_list = join_actions(obs, algo_list, greedy_info)
+        action_list = get_join_actions(state, algo_list)
         joint_action = env.encode(action_list)
 
         step = 0
@@ -93,12 +110,9 @@ def run_game(env, algo_list, episode, verbose=False):
 
             state = next_state
             step += 1
-            obs = get_observations(state, info, agent_index, obs_dim, height, width)
+            # obs = get_observations(state, info, agent_index, obs_dim, height, width)
 
-            greedy_info = {'state': np.squeeze(np.array(state), axis=2), 'beans': info['beans_position'],
-                           'snakes': info['snakes_position'], 'width': width, 'height': height}
-
-            action_list = join_actions(obs, algo_list, greedy_info)
+            action_list = get_join_actions(state, algo_list)
             joint_action = env.encode(action_list)
 
             if verbose:
@@ -123,7 +137,7 @@ if __name__ == "__main__":
     game = make(env_type, conf=None)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--my_ai", default="random", help="dqn/random/greedy")
+    parser.add_argument("--my_ai", default="dqn", help="dqn/random/greedy")
     parser.add_argument("--opponent", default="greedy", help="dqn/random/greedy")
     parser.add_argument("--episode", default=100)
     args = parser.parse_args()

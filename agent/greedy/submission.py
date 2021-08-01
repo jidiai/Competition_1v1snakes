@@ -35,7 +35,6 @@ def get_surrounding(state, width, height, x, y):
                    state[(y + 1) % height][x],  # down
                    state[y][(x - 1) % width],  # left
                    state[y][(x + 1) % width]]  # right
-
     return surrounding
 
 
