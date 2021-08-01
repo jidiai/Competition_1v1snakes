@@ -1,6 +1,17 @@
 import copy
 import math
-import numpy as np
+
+
+def make_grid_map(board_width, board_height, beans_positions:list, snakes_positions:dict):
+    snakes_map = [[[0] for _ in range(board_width)] for _ in range(board_height)]
+    for index, pos in snakes_positions.items():
+        for p in pos:
+            snakes_map[p[0]][p[1]][0] = index
+
+    for bean in beans_positions:
+        snakes_map[bean[0]][bean[1]][0] = 1
+
+    return snakes_map
 
 
 def get_min_bean(x, y, beans_position):
@@ -60,6 +71,5 @@ def to_joint_action(actions, num_agent):
         action = actions[i]
         one_hot_action = [0] * 4
         one_hot_action[action] = 1
-        one_hot_action = [one_hot_action]
         joint_action.append(one_hot_action)
     return joint_action

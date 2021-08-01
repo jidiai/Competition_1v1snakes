@@ -3,6 +3,18 @@ import math
 import numpy as np
 
 
+def make_grid_map(board_width, board_height, beans_positions:list, snakes_positions:dict):
+    snakes_map = [[[0] for _ in range(board_width)] for _ in range(board_height)]
+    for index, pos in snakes_positions.items():
+        for p in pos:
+            snakes_map[p[0]][p[1]][0] = index
+
+    for bean in beans_positions:
+        snakes_map[bean[0]][bean[1]][0] = 1
+
+    return snakes_map
+
+
 def get_min_bean(x, y, beans_position):
     min_distance = math.inf
     min_x = beans_position[0][1]
@@ -23,7 +35,6 @@ def get_surrounding(state, width, height, x, y):
                    state[(y + 1) % height][x],  # down
                    state[y][(x - 1) % width],  # left
                    state[y][(x + 1) % width]]  # right
-
     return surrounding
 
 
@@ -60,25 +71,27 @@ def to_joint_action(actions, num_agent):
         action = actions[i]
         one_hot_action = [0] * 4
         one_hot_action[action] = 1
-        one_hot_action = [one_hot_action]
         joint_action.append(one_hot_action)
     return joint_action
 
 
-def my_controller(observation_list, action_space_list, is_act_continuous):
-    obs = observation_list[0]
+def my_controller(observation, action_space_list, is_act_continuous):
+    obs = observation.copy()
+    ctrl_agent_index = [obs['controlled_snake_index']]
     board_width = obs['board_width']
     board_height = obs['board_height']
-    ctrl_agent_index = [obs['controlled_snake_index'] + 2 for obs in observation_list]
-    state_map = np.squeeze(np.array(obs['state_map']), axis=2)
-    beans_position = obs[1]
-    snakes_position = {key: obs[key] for key in obs.keys() & {2, 3}}
+    beans_positions = obs[1]
+    snakes_positions = {key: obs[key] for key in obs.keys() & {2, 3}}
+    snake_map = make_grid_map(board_width, board_height, beans_positions, snakes_positions)
+    state_map = np.squeeze(np.array(snake_map), axis=2)
 
+    # 100% greedy algo
     p = np.random.random()
     epsilon = 1
     if p <= epsilon:
-        actions = greedy_snake(state_map, beans_position, snakes_position, board_width, board_height, ctrl_agent_index)
+        actions = greedy_snake(state_map, beans_positions, snakes_positions, board_width, board_height, ctrl_agent_index)
     else:
         actions = np.random.randint(4, size=len(ctrl_agent_index))
+
     joint_action = to_joint_action(actions, len(ctrl_agent_index))
     return joint_action

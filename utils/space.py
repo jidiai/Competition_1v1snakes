@@ -3,7 +3,7 @@ from gym.utils import seeding
 
 class Space(object):
     """Defines the observation and action spaces, so you can write generic
-    code that applies to any Env. For example, you can choose a greedy_min
+    code that applies to any Env. For example, you can choose a random
     action.
 
     WARNING - Custom observation & action spaces can inherit from the `Space`

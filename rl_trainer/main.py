@@ -1,7 +1,8 @@
 import os
 import argparse
 
-from utils import *
+from common import *
+from arguments import get_args
 from log_path import make_logpath
 from collections import namedtuple
 from dqn import DQN
@@ -12,24 +13,48 @@ import numpy as np
 import random
 import torch
 
+env = make('snakes_1v1', conf=None)
+
+args = get_args()
+
+game_name = args.game_name
+print(f'game name: {args.game_name}')
+
+width = env.board_width
+print(f'Game board width: {width}')
+height = env.board_height
+print(f'Game board height: {height}')
+action_dim = env.get_action_dim()
+print(f'action dimension: {action_dim}')
+obs_dim = 18
+print(f'observation dimension: {obs_dim}')
+
+
+def get_players_and_action_space_list():
+    n_agent_num = list(env.agent_nums)
+    for i in range(1, len(n_agent_num)):
+        n_agent_num[i] += n_agent_num[i - 1]
+
+    players_id = []
+    actions_space = []
+    for policy_i in range(len(env.obs_type)):
+        if policy_i == 0:
+            players_id_list = range(n_agent_num[policy_i])
+        else:
+            players_id_list = range(n_agent_num[policy_i - 1], n_agent_num[policy_i])
+        players_id.append(players_id_list)
+
+        action_space_list = [env.get_single_action_space(player_id) for player_id in players_id_list]
+        actions_space.append(action_space_list)
+
+    return players_id, actions_space
+
+
+def get_state(all_observation):
+    return all_observation[0] # todo
+
 
 def main(args):
-    env = make('snakes_1v1', conf=None)
-    game_name = args.game_name
-    print(f'game name: {args.game_name}')
-
-    ctrl_agent_index = [0]
-    ctrl_agent_num = len(ctrl_agent_index)
-
-    width = env.board_width
-    print(f'Game board width: {width}')
-    height = env.board_height
-    print(f'Game board height: {height}')
-    action_dim = env.get_action_dim()
-    print(f'action dimension: {action_dim}')
-    obs_dim = 18
-    print(f'observation dimension: {obs_dim}')
-
     # set seed
     torch.manual_seed(args.seed_nn)
     np.random.seed(args.seed_np)
@@ -47,13 +72,21 @@ def main(args):
     else:
         save_config(args, log_dir)
 
+    ctrl_agent_index = [0]  # in code
+    ctrl_agent_num = len(ctrl_agent_index)
+    agent_trained_index = 2  # in env
+
     Transition = namedtuple('Transition', ['state', 'action', 'reward', 'next_state', 'done'])
     model = DQN(obs_dim, action_dim, ctrl_agent_num, args)
+
     episode = 0
 
     while episode < args.max_episodes:
-        state, info = env.reset()
-        obs = get_observations(state, info, ctrl_agent_index, obs_dim, height, width)
+        state = env.reset()
+
+        state_rl_agent = get_state(state)
+
+        obs = get_observations(state_rl_agent, agent_trained_index, obs_dim)
 
         episode += 1
         step = 0
@@ -63,24 +96,24 @@ def main(args):
             action = model.choose_action(obs)
             actions = append_random(action_dim, action)
 
-            # actions = model.choose_action(obs)
+            next_state, reward, done, _, _ = env.step(env.encode(actions))
 
-            next_state, reward, done, _, info = env.step(env.encode(actions))
+            next_state_rl_agent = get_state(next_state)
 
             reward = np.array(reward)
             episode_reward += reward
 
             if done:
-                if np.sum(episode_reward[0]) > np.sum(episode_reward[1]):
-                    step_reward = get_reward(info, ctrl_agent_index, reward, final_result=1)
-                elif np.sum(episode_reward[0]) < np.sum(episode_reward[1]):
-                    step_reward = get_reward(info, ctrl_agent_index, reward, final_result=2)
+                if episode_reward[0] > episode_reward[1]:
+                    step_reward = get_reward(next_state_rl_agent, ctrl_agent_index, reward, final_result=1)
+                elif episode_reward[0] < episode_reward[1]:
+                    step_reward = get_reward(next_state_rl_agent, ctrl_agent_index, reward, final_result=2)
                 else:
-                    step_reward = get_reward(info, ctrl_agent_index, reward, final_result=3)
+                    step_reward = get_reward(next_state_rl_agent, ctrl_agent_index, reward, final_result=3)
                 next_obs = np.zeros((ctrl_agent_num, obs_dim))
             else:
-                step_reward = get_reward(info, ctrl_agent_index, reward, final_result=0)
-                next_obs = get_observations(next_state, info, ctrl_agent_index, obs_dim, height, width)
+                step_reward = get_reward(next_state_rl_agent, ctrl_agent_index, reward, final_result=0)
+                next_obs = get_observations(next_state_rl_agent, agent_trained_index, obs_dim)
 
             done = np.array([done] * ctrl_agent_num)
 
@@ -112,40 +145,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
 
-    parser.add_argument('--game_name', default='snake1v1')
-    parser.add_argument('--algo', default='dqn', help='dqn')
-
-    # trainer
-    parser.add_argument('--max_episodes', default=5000, type=int)
-    parser.add_argument('--episode_length', default=5000, type=int)
-    parser.add_argument('--save_interval', default=1000, type=int)
-    parser.add_argument('--model_episode', default=0, type=int)
-    parser.add_argument('--train_redo', default=False, type=bool)
-    parser.add_argument('--run_redo', default=None, type=int)
-
-    # algo
-    parser.add_argument('--output_activation', default='softmax', type=str, help='tanh/softmax')
-    parser.add_argument('--buffer_size', default=int(1e5), type=int)
-    parser.add_argument('--tau', default=0.001, type=float)
-    parser.add_argument('--gamma', default=0.95, type=float)
-    parser.add_argument('--lr_a', default=0.0001, type=float)
-    parser.add_argument('--lr_c', default=0.0001, type=float)
-    parser.add_argument('--batch_size', default=64, type=int)
-    parser.add_argument('--epsilon', default=0.2, type=float)
-    parser.add_argument('--epsilon_speed', default=0.99998, type=float)
-    parser.add_argument('--epsilon_end', default=0.05, type=float)
-    parser.add_argument('--hidden_size', default=256, type=int)
-    parser.add_argument('--target_replace', default=100, type=int)
-
-    # seed
-    parser.add_argument('--seed_nn', default=1, type=int)
-    parser.add_argument('--seed_np', default=1, type=int)
-    parser.add_argument('--seed_random', default=1, type=int)
-
-    # evaluation
-    parser.add_argument('--evaluate_rate', default=50)
-
-    args = parser.parse_args()
     main(args)

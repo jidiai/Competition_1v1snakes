@@ -82,7 +82,7 @@ class Box(Space):
 
     def sample(self):
         """
-        Generates a single greedy_min sample inside of the Box.
+        Generates a single random sample inside of the Box.
 
         In creating a sample of the box, each coordinate is sampled according to
         the form of the interval:

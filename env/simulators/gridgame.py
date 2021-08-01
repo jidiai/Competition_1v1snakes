@@ -1,3 +1,8 @@
+# -*- coding:utf-8  -*-
+# 作者：zruizhi
+# 创建时间： 2020/7/10 10:24 上午
+# 描述：
+
 from PIL import Image, ImageDraw
 from itertools import count
 import numpy as np
@@ -9,13 +14,13 @@ FIX = 8
 
 class GridGame(Game):
     def __init__(self, conf, colors=None, unit_size=UNIT, fix=FIX):
-        super().__init__(int(conf['n_player']))
+        super().__init__(conf['n_player'], conf['is_obs_continuous'], conf['is_act_continuous'],
+                         conf['game_name'], conf['agent_nums'], conf['obs_type'])
         # grid game conf
         self.game_name = conf['game_name']
         self.max_step = int(conf['max_step'])
         self.board_width = int(conf['board_width'])
         self.board_height = int(conf['board_height'])
-        self.agent_nums = [int(i) for i in str(conf['agent_nums']).split(',')]
         self.cell_range = conf['cell_range'] if isinstance(eval(str(conf['cell_range'])), tuple) else (
         int(conf['cell_range']),)
         self.cell_dim = len(self.cell_range)
@@ -133,11 +138,10 @@ class GridGame(Game):
 
     def step(self, joint_action):
         info_before = self.step_before_info()
-        next_state, info_after = self.get_next_state(joint_action)
-        self.current_state = next_state
+        all_observes, info_after = self.get_next_state(joint_action)
         done = self.is_terminal()
         reward = self.get_reward(joint_action)
-        return next_state, reward, done, info_before, info_after
+        return all_observes, reward, done, info_before, info_after
 
     def step_before_info(self, info=''):
         return info
@@ -178,10 +182,10 @@ class GridGame(Game):
 
     @staticmethod
     def _render_board(state, board, colors, unit, fix, extra_info=None):
-        """
+        '''
             完成基本渲染棋盘操作
             设置extra_info参数仅为了保持子类方法签名的一致
-        """
+        '''
         im = board.copy()
         draw = ImageDraw.Draw(im)
         for x, row in zip(count(0), state):
