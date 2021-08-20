@@ -174,8 +174,8 @@ if __name__ == "__main__":
     render_mode = True
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--my_ai", default="greedy", help="dqn/random/greedy")
-    parser.add_argument("--opponent", default="greedy", help="dqn/random/greedy")
+    parser.add_argument("--my_ai", default="homework", help="homework/random")
+    parser.add_argument("--opponent", default="random", help="homework/random")
     args = parser.parse_args()
 
     policy_list = [args.my_ai, args.opponent]

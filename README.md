@@ -1,4 +1,6 @@
-# Competition_1v1snakes
+# RLChina2021 SummerCourse 大作业
+
+## 任务：贪吃蛇 snakes_1v1 - 算法自定义 - 提交到Jidi平台，成绩优于随机
 
 ### Dependency
 You need to create competition environment.
@@ -8,11 +10,12 @@ You need to create competition environment.
 
 >pip install -r requirements.txt
 
-### Baseline agents
-1. random-agent 
-2. greedy-agent
-3. rl-agent
+---
 
+## Baseline 👉请看[random_agent.py](agent/random_agent.py)
+## Homework 👉请看[submission.py](agent/homework/submission.py)
+
+---
 ### How to train rl-agent
 
 >python rl_trainer/main.py
@@ -21,22 +24,15 @@ You can edit different parameters, for example
 
 >python rl_trainer/main.py --lr_a 0.001 --seed_nn 2
 
-### Evaluation 
-You can locally evaluate your different agents
-
->python evaluation.py --my_ai "random" --opponent "dqn"
 
 ### How to test submission 
-You can locally test your submission. At Jidi platform, we evaluate your submission as same as **run_log.py**
+
+When your submission is ready, you can locally test your submission. At Jidi platform, we evaluate your submission as same as **run_log.py**
 
 Once you run this file, you can locally check battle logs in the folder named "logs".
 
-For example, 
->python run_log.py --my_ai "random" --opponent "dqn"
+Have fun~
 
-### Ready to submit 
 
-1. Random policy --> **agent/random/submission.py**
-2. Greedy policy --> **agent/greedy/submission.py**
-3. RL policy --> **agent/dqn/submission.py** and **critic_5000.pth**
+
 

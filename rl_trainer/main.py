@@ -1,11 +1,12 @@
-import os
-import argparse
-
 from common import *
 from arguments import get_args
 from log_path import make_logpath
 from collections import namedtuple
 from dqn import DQN
+from pathlib import Path
+import sys
+base_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(base_dir))
 from env.chooseenv import make
 from tensorboardX import SummaryWriter
 
@@ -145,5 +146,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-
     main(args)

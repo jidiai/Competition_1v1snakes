@@ -1,15 +1,3 @@
-# -*- coding:utf-8  -*-
-# Time  : 2021/5/27 下午3:38
-# Author: Yahui Cui
-
-import os
-import numpy as np
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import random
-
-
 def make_grid_map(board_width, board_height, beans_positions:list, snakes_positions:dict):
     snakes_map = [[[0] for _ in range(board_width)] for _ in range(board_height)]
     for index, pos in snakes_positions.items():
@@ -75,54 +63,3 @@ def get_observations(state, agent_trained_index, obs_dim):
     observations[0][16:] = snakes_other_position[0][:]
 
     return observations
-
-
-class Critic(nn.Module):
-    def __init__(self, input_size, output_size, hidden_size):
-        super().__init__()
-        self.input_size = input_size
-        self.output_size = output_size
-        self.linear1 = nn.Linear(input_size, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, output_size)
-
-    def forward(self, x):
-        x = F.relu(self.linear1(x))
-        x = self.linear2(x)
-        return x
-
-
-class DQN(object):
-    def __init__(self, state_dim, action_dim, num_agent, hidden_size):
-        self.state_dim = state_dim
-        self.action_dim = action_dim
-        self.num_agent = num_agent
-
-        self.hidden_size = hidden_size
-
-        self.critic_eval = Critic(self.state_dim, self.action_dim, self.hidden_size)
-        self.critic_target = Critic(self.state_dim, self.action_dim, self.hidden_size)
-
-    def choose_action(self, observation):
-        observation = torch.tensor(observation, dtype=torch.float).view(1, -1)
-        action = torch.argmax(self.critic_eval(observation)).item()
-        return action
-
-    def load(self, file):
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        file = os.path.join(base_path, file)
-        self.critic_eval.load_state_dict(torch.load(file))
-        self.critic_target.load_state_dict(torch.load(file))
-
-
-def to_joint_action(actions, num_agent):
-    joint_action = []
-    for i in range(num_agent):
-        action = actions
-        one_hot_action = [0] * 4
-        one_hot_action[action] = 1
-        one_hot_action = [one_hot_action]
-        joint_action.append(one_hot_action)
-    return joint_action
-
-agent = DQN(18, 4, 1, 256)
-agent.load('critic_20000.pth')
