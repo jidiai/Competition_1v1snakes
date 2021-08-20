@@ -1,6 +1,7 @@
 # RLChina2021 SummerCourse 大作业
 
 ## 任务：贪吃蛇 snakes_1v1 - 算法自定义 - 提交到Jidi平台，成绩优于随机
+提交链接：[RLChina2021暑期习题课擂台](http://www.jidiai.cn/compete_detail?compete=7#competitionRule)
 
 ### Dependency
 You need to create competition environment.
@@ -12,7 +13,7 @@ You need to create competition environment.
 
 ---
 
-## Baseline 👉请看[random_agent.py](agent/random_agent.py)
+## Baseline 👉请看[random_agent.py](agent/random/random_agent.py)
 ## Homework 👉请看[submission.py](agent/homework/submission.py)
 
 ---
