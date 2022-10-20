@@ -9,8 +9,8 @@ import os
 import copy
 import math
 
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-
+# device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+device = torch.device("cpu")
 
 def hard_update(source, target):
     target.load_state_dict(source.state_dict())

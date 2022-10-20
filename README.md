@@ -1,11 +1,10 @@
-# RLChina2021 SummerCourse 大作业
+# Competition_1v1snakes
 
-## 任务：贪吃蛇 snakes_1v1 - 算法自定义 - 提交到Jidi平台，成绩优于随机
-提交链接：[RLChina2021暑期习题课擂台](http://www.jidiai.cn/compete_detail?compete=7#competitionRule)
+## 任务：贪吃蛇 snakes_1v1
 
 ### Dependency
 You need to create competition environment.
->conda create -n snake1v1 python=3.6
+>conda create -n snake1v1 python=3.7
 
 >conda activate snake1v1
 
