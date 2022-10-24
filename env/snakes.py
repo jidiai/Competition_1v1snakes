@@ -13,8 +13,10 @@ import itertools
 
 
 class SnakeEatBeans(GridGame, GridObservation, DictObservation):
-    def __init__(self, conf):
+    def __init__(self, conf, seed=None):
         self.terminate_flg = False
+        self.seed = seed
+        self.set_seed()
         colors = conf.get('colors', [(255, 255, 255), (255, 140, 0)])
         super(SnakeEatBeans, self).__init__(conf, colors)
         # 0: 没有 1：食物 2-n_player+1:各玩家蛇身
@@ -37,6 +39,19 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation):
 
         self.input_dimension = self.board_width * self.board_height
         self.action_dim = self.get_action_dim()
+
+    @staticmethod
+    def create_seed():
+        seed = random.randrange(1000)
+        return seed
+
+    def set_seed(self, seed=None):
+        if not seed:
+            seed = self.seed
+        random.seed(seed)
+        np.random.seed(seed)
+        if not self.seed:
+            self.seed = seed
 
     def check_win(self):
         flg = self.won.index(max(self.won)) + 2
@@ -63,6 +78,7 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation):
         return action_space
 
     def reset(self):
+        self.set_seed()
         self.step_cnt = 1
         self.snakes_position = {}
         self.players = []
@@ -236,11 +252,15 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation):
             for i in range(self.n_player):
                 s = self.players[i]
                 self.won[i] = s.score
-            info_after = {}
-            info_after["snakes_position"] = [list(v) for k, v in sorted(self.snakes_position.items(), key=lambda item: item[0])]
-            info_after["beans_position"] = list(self.beans_position)
-            info_after["hit"] = re_generatelist
-            info_after["score"] = self.won
+            info_after = {
+                "snakes_position": [list(v) for k, v in sorted(self.snakes_position.items(), key=lambda item: item[0])],
+                "beans_position": list(self.beans_position), "hit": re_generatelist, "score": self.won}
+            directs = []
+            for i in range(len(self.players)):
+                s = self.players[i]
+                directs.append(self.actions_name[s.direction])
+            info_after["directions"] = directs
+
             self.all_observes = self.get_all_observes(before_info)
 
             return self.all_observes, info_after
@@ -307,24 +327,16 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation):
         # print(self.terminate_flg)
         return snake
 
-    # def is_not_valid_action(self, joint_action):
-    #     not_valid = 0
-    #     if len(joint_action) != self.n_player:
-    #         raise Exception("joint action 维度不正确！", len(joint_action))
-    #
-    #     for i in range(len(joint_action)):
-    #         if len(joint_action[i][0]) != 4:
-    #             raise Exception("玩家%d joint action维度不正确！" % i, joint_action[i])
-    #     return not_valid
-
     def is_not_valid_action(self, all_action):
         not_valid = 0
         if len(all_action) != self.n_player:
-            raise Exception("all action 维度不正确！", len(all_action))
+            raise Exception("Input joint action dimension should be {}, not {}".format(
+                self.n_player, len(all_action)))
 
         for i in range(self.n_player):
             if len(all_action[i][0]) != 4:
-                raise Exception("玩家%d joint action维度不正确！" % i, all_action[i])
+                raise Exception("The input action dimension for player {} should be {}, not {}".format(
+                    i, 4, len(all_action[i][0])))
         return not_valid
 
     def get_reward(self, all_action):
@@ -347,7 +359,8 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation):
     def encode(self, actions):
         joint_action = self.init_action_space()
         if len(actions) != self.n_player:
-            raise Exception("action输入维度不正确！", len(actions))
+            raise Exception("Input joint action dimension should be {}, not {}".format(
+                self.n_player, len(joint_action)))
         for i in range(self.n_player):
             joint_action[i][0][int(actions[i])] = 1
         return joint_action
@@ -372,47 +385,6 @@ class SnakeEatBeans(GridGame, GridObservation, DictObservation):
             action_dim *= self.joint_action_space[0][i].n
 
         return action_dim
-
-    def draw_board(self):
-        cols = [chr(i) for i in range(65, 65 + self.board_width)]
-        s = ', '.join(cols)
-        print('  ', s)
-        for i in range(self.board_height):
-            # print(i)
-            print(chr(i + 65), self.current_state[i])
-
-    @staticmethod
-    def _render_board(state, board, colors, unit, fix, extra_info):
-        im = GridGame._render_board(state, board, colors, unit, fix)
-        draw = ImageDraw.Draw(im)
-        fnt = ImageFont.truetype("Courier.dfont", 16)
-        for i, pos in zip(count(1), extra_info):
-            x, y = pos
-            draw.text(((y + 1 / 4) * unit, (x + 1 / 4) * unit),
-                      "#{}".format(i),
-                      font=fnt,
-                      fill=(0, 0, 0))
-
-        return im
-
-    def render_board(self):
-        extra_info = [tuple(x.headPos) for x in self.players]
-        im_data = np.array(
-            SnakeEatBeans._render_board(self.get_render_data(self.current_state), self.grid, self.colors, self.grid_unit, self.grid_unit_fix,
-                                        extra_info))
-        self.game_tape.append(im_data)
-        return im_data
-
-    @staticmethod
-    def parse_extra_info(data):
-        # return eval(re.search(r'({.*})', data['info_after']).group(1)).values()
-        # d = (eval(eval(data)['snakes_position']).values())
-        if isinstance(data, str):
-            d = eval(data)['snakes_position']
-        else:
-            d = data['snakes_position']
-
-        return [i[0] for i in d]
 
 
 class Snake():
@@ -442,13 +414,11 @@ class Snake():
             while n_direct + self.direction == 0:
                 n_direct = random.choice(self.actions)
             self.direction = n_direct
-        #     print("方向不合法，重新生成")
-        # print("direction", self.actions_name[self.direction])
 
     # 超过边界，可以穿越
     def update_position(self, position):
-        position[0] %= self.board_height
-        position[1] %= self.board_width
+        position[0] = (position[0] + self.board_height) % self.board_height
+        position[1] = (position[1] + self.board_width) % self.board_width
         return position
 
     def move_and_add(self, snakes_position):
@@ -468,12 +438,11 @@ class Snake():
             cur_head[0] += 1
 
         cur_head = self.update_position(cur_head)
-        # print("cur head", cur_head)
-        # print("cur snakes positions", snakes_position)
 
         self.segments.insert(0, cur_head)
         self.headPos = self.segments[0]
         return cur_head
 
     def pop(self):
-        self.segments.pop()  # 在蛇尾减去一格
+        # 在蛇尾减去一格
+        self.segments.pop()
