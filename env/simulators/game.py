@@ -3,6 +3,8 @@
 # 创建时间： 2020/7/10 10:24 上午
 # 描述：
 from abc import ABC, abstractmethod
+import numpy as np
+from utils.discrete import Discrete
 
 
 class Game(ABC):
@@ -45,4 +47,27 @@ class Game(ABC):
 
     def set_action_space(self):
         raise NotImplementedError
+
+    def is_single_valid_action(self, single_action, action_space, index):
+        for i in range(len(action_space)):
+            if isinstance(action_space[i], Discrete):
+                if single_action is None or single_action[i] is None:
+                    raise Exception("The input action should be not None")
+                if len(single_action[i]) != action_space[i].n:
+                    raise Exception("The input action dimension should be {}, not {}".format(action_space[i].n, len(single_action[i])))
+                if not sum(single_action[i]) == 1:
+                    raise Exception("Illegal input action")
+                elif 1 not in single_action[i]:
+                    raise Exception("The input action is out of range")
+            else:
+                if single_action is None or single_action[i] is None:
+                    raise Exception("The input action should be not None")
+                if not isinstance(single_action[i], np.ndarray) and not isinstance(single_action[i], list):
+                    raise Exception("For continuous action, the input should be numpy.ndarray or list")
+                if isinstance(single_action[i], list):
+                    single_action[i] = np.array(single_action[i])
+                if single_action[i].shape != action_space[i].shape:
+                    raise Exception("The input action dimension should be {}, not {}".format(action_space[i].shape, single_action[i].shape))
+                if not action_space[i].contains(single_action[i]):
+                    raise Exception("The input action is out of range")
 
